@@ -37,9 +37,37 @@ def generate():
         Miller_Rabbin = Miller_Rabbin_test(numb)
     return numb
 
+def euclid_ext(a, b):
+    """
+    Расширенный алгоритм Евклида
+
+    :param a:
+    :param b:
+    :return: a*u[1] + b*u[2] = u[0]
+    """
+    u = (a, 1, 0)
+    v = (b, 0, 1)
+    while v[0]>0:
+        q = u[0]//v[0]
+        t = (u[0]%v[0], u[1] - q*v[1], u[2]- q*v[2])
+        u = v
+        v = t
+    return u
+
+def invert(a, m):
+    u = euclid_ext(a, m)
+    if u[0]>1:
+        return 'No inverse'
+    return u[1]%m
+
 if __name__ == '__main__':
     p = generate()
     q = generate()
+    n = p * q
+    fi = (p - 1) * (q - 1)
+    e = 65537 # это в двоичке 100...(15)...001
+    d = (invert(e, fi)) # вычисляем e = d mod(fi). d - это обратное число e
 
-
+    # e, n - открытый ключ
+    # d, n - закрытый ключ
 
