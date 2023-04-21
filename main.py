@@ -1,6 +1,6 @@
 import random
 import math
-
+import time
 
 def Miller_Rabbin_test(n, k=25):
     """
@@ -154,22 +154,31 @@ def pkcs1_v1_5_decrypt(em, d, n):
 
 
 if __name__ == '__main__':
+    print('*** \t [Код готов к шифрованию] \t ***');time.sleep(3)
+    message = str(input('Введите сообщение: '))
+    print('*** \t [Генерация числа p...] \t ***');time.sleep(7)
     p = generate()
+    print(f"Число p: {p}")
+    print('*** \t [Генерация числа q...] \t ***');time.sleep(4)
     q = generate()
+    print(f"Число q: {q}")
     n = p * q
     fi = (p - 1) * (q - 1)
     e = 65537  # это в двоичной системе 100...(15)...001
+    print('*** \t [Вычисление d...] \t\t ***');time.sleep(11)
     d = invert(e, fi)  # вычисляем e = d mod(fi). d - это обратное число e
+    print(f"Число d: {d}")
 
     # e, n - открытый ключ
     # d, n - закрытый ключ
 
     # message = 'Только представьте, сколько занимает времени и усилий переводить тех'
-    message = 'Только представьте, сколько занимает времени и усилий переводи'
-
+    # message = 'Только представьте, сколько занимает времени и усилий переводи'
     # message = 'переводи'
-    mess_encode = encode_to_int(message)
+    print('*** \t [Идет процесс шифрования] \t ***');time.sleep(10)
+    enc_mess = pkcs1_v1_5_enctypt(n, encode_to_int(message), e)
+    print(f"Результат шифрования:\n{enc_mess}")
 
-    enc_mess = pkcs1_v1_5_enctypt(n, mess_encode, e)
+    print('*** \t [Начинается процесс расшифрования] \t ***');time.sleep(13)
     decrypt_mess = pkcs1_v1_5_decrypt(enc_mess, d, n).decode('utf-8')
-    print(decrypt_mess)
+    print(f'Расшифрованное сообщение:\n{decrypt_mess}')
