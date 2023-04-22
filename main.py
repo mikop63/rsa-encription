@@ -2,11 +2,12 @@ import random
 import math
 import time
 
-def Miller_Rabbin_test(n, k=25):
+
+def Miller_Rabbin_test(n: int, k=25) -> int:
     """
-997 - простое
-999 - составное
-    :param numb:
+    Тест, который определит составное число или возможно простое
+
+    :param n: число, которое проверяется на простату
     :param k: число раундов
     :return: 0 - число вероятно простое, 1 - составное
     """
@@ -32,8 +33,13 @@ def Miller_Rabbin_test(n, k=25):
     return 0
 
 
-def generate():
-    numb = random.randint(2 ** 511, 2 ** 512) | 1  # число длиной от 511 до 512 бит, нечетное
+def generate() -> int:
+    """
+    Функция сгенерирует число
+
+    :return: нечетное число длиной от 511 до 512 бит
+    """
+    numb = random.randint(2 ** 511, 2 ** 512) | 1
     Miller_Rabbin = Miller_Rabbin_test(numb)
     while Miller_Rabbin == 1:
         numb += 2
@@ -41,9 +47,9 @@ def generate():
     return numb
 
 
-def Euclid_ext(a, b):
+def Euclid_ext(a: int, b: int) -> tuple:
     """
-    Расширенный алгоритм Евклида
+    Расширенный алгоритм Евклида. Находит наибольший общий делитель
 
     :param a:
     :param b:
@@ -59,14 +65,14 @@ def Euclid_ext(a, b):
     return u
 
 
-def invert(a, m):
+def invert(a: int, m: int) -> int:
     u = Euclid_ext(a, m)
-    if u[0] > 1:
-        return 'No inverse'
+    if u[0] > 1: # Если НОД > 1 вернется ошибка
+        raise ValueError('No inverse')
     return u[1] % m
 
 
-def encode_to_int(message: str) -> int:
+def encode_str_to_int(message: str) -> int:
     """
     Перевод текста в int.
 
@@ -78,7 +84,7 @@ def encode_to_int(message: str) -> int:
     return x
 
 
-def decode(enc_message: int) -> str:
+def decode_int_to_str(enc_message: int) -> str:
     """
     Переводим из int в str
 
@@ -103,7 +109,7 @@ def encryption(message: int, e: int, n: int) -> int:
     return pow(message, e, n)
 
 
-def decryption(message, d, n):
+def decryption(message: int, d: int, n: int) -> int:
     return pow(message, d, n)
 
 
@@ -132,7 +138,7 @@ def pkcs1_v1_5_enctypt(n: int, message: int, e):
     # TODO: уточнить сколько цифр генерировать
     payloads = [random.randint(1, 255) for i in range(10)]
     header = bytes([0, 2]) + bytes(payloads) + bytes([0]) + message.to_bytes((message.bit_length() + 7) // 8,
-                         byteorder='big')
+                                                                             byteorder='big')
     header_int = int.from_bytes(header, byteorder='big')
     return encryption(header_int, e, n)
 
@@ -147,7 +153,7 @@ def pkcs1_v1_5_decrypt(em, d, n):
     em_bytes = bytes([0]) + em_int.to_bytes((em_int.bit_length() + 7) // 8, byteorder='big')
     ps_index = em_bytes.index(0x00, 0x02)  # Находим разделитель
     ps = em_bytes[2:ps_index]
-    m = em_bytes[ps_index+1:]
+    m = em_bytes[ps_index + 1:]
     if em_bytes[:2] != b'\x00\x02' or len(ps) < 8:
         raise ValueError('Не верная сигнатура PKCS#1 v1.5')
     return m
@@ -176,7 +182,7 @@ if __name__ == '__main__':
     # message = 'Только представьте, сколько занимает времени и усилий переводи'
     # message = 'переводи'
     print('*** \t [Идет процесс шифрования] \t ***');time.sleep(10)
-    enc_mess = pkcs1_v1_5_enctypt(n, encode_to_int(message), e)
+    enc_mess = pkcs1_v1_5_enctypt(n, encode_str_to_int(message), e)
     print(f"Результат шифрования:\n{enc_mess}")
 
     print('*** \t [Начинается процесс расшифрования] \t ***');time.sleep(13)
