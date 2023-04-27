@@ -67,7 +67,7 @@ def Euclid_ext(a: int, b: int) -> tuple:
 
 def invert(a: int, m: int) -> int:
     u = Euclid_ext(a, m)
-    if u[0] > 1: # Если НОД > 1 вернется ошибка
+    if u[0] > 1:  # Если НОД > 1 вернется ошибка
         raise ValueError('No inverse')
     return u[1] % m
 
@@ -130,17 +130,19 @@ def pkcs1_v1_5_enctypt(n: int, message: int, e):
     # нужно, чтобы нельзя было подобрать ключ если зашифрованное сообщение мало
 
     # считаем количество байт в числе n
+    # k - длина ключа
     k = int(math.log(n, 2) // 8 + 1)  # второй вариант int(math.log(n, 256) + 1). Байты - числа от 0 до 255
     mLen = int(math.log(message, 2) // 8 + 1)
     if mLen > k - 11:
         raise ValueError('Сообщение слишком длинное')
 
-    # TODO: уточнить сколько цифр генерировать
-    payloads = [random.randint(1, 255) for i in range(10)]
+    payloads = [random.randint(1, 255) for i in range(k - 3 - mLen)]
     header = bytes([0, 2]) + bytes(payloads) + bytes([0]) + message.to_bytes((message.bit_length() + 7) // 8,
                                                                              byteorder='big')
     header_int = int.from_bytes(header, byteorder='big')
-    return encryption(header_int, e, n)
+    enc_mess = encryption(header_int, e, n)
+
+    return enc_mess, k
 
 
 def pkcs1_v1_5_decrypt(em, d, n):
@@ -149,8 +151,7 @@ def pkcs1_v1_5_decrypt(em, d, n):
 
     # Шаг 2: EM = 0x00 || 0x02 || PS || 0x00 || M
     # Извлекаем M из EM
-    # TODO: bytes([0]) + -это костыль. Почему-то в сигнатуре вместо: b'\x00\x02, получается: b'\x02
-    em_bytes = bytes([0]) + em_int.to_bytes((em_int.bit_length() + 7) // 8, byteorder='big')
+    em_bytes = em_int.to_bytes((n.bit_length() + 7) // 8, byteorder='big')
     ps_index = em_bytes.index(0x00, 0x02)  # Находим разделитель
     ps = em_bytes[2:ps_index]
     m = em_bytes[ps_index + 1:]
@@ -159,7 +160,7 @@ def pkcs1_v1_5_decrypt(em, d, n):
     return m
 
 
-if __name__ == '__main__':
+def encr_without_openssl():
     print('*** \t [Код готов к шифрованию] \t ***');time.sleep(3)
     message = str(input('Введите сообщение: '))
     print('*** \t [Генерация числа p...] \t ***');time.sleep(7)
@@ -182,9 +183,30 @@ if __name__ == '__main__':
     # message = 'Только представьте, сколько занимает времени и усилий переводи'
     # message = 'переводи'
     print('*** \t [Идет процесс шифрования] \t ***');time.sleep(10)
-    enc_mess = pkcs1_v1_5_enctypt(n, encode_str_to_int(message), e)
+    enc_mess, k = pkcs1_v1_5_enctypt(n, encode_str_to_int(message), e)
     print(f"Результат шифрования:\n{enc_mess}")
 
     print('*** \t [Начинается процесс расшифрования] \t ***');time.sleep(13)
     decrypt_mess = pkcs1_v1_5_decrypt(enc_mess, d, n).decode('utf-8')
     print(f'Расшифрованное сообщение:\n{decrypt_mess}')
+
+
+def encr_with_openssl():
+    """
+    Шифрование файла с чужим ключом
+    """
+    # pip install pycryptodomex
+    from Cryptodome.PublicKey import RSA
+    with open("teacher_pub.pem", "r") as f: # заменить на название ключа
+        key = RSA.importKey("\n".join(
+                [x.strip() for x in f.read().split("\n")]))
+    message = str(input('Введите сообщение: '))
+    enc_mess, k = pkcs1_v1_5_enctypt(key.n, encode_str_to_int(message), key.e)
+
+    with open("message.pem", "wb") as f: # название файла после зашифрования
+        f.write(enc_mess.to_bytes(k, byteorder="big"))
+    print(f"Результат шифрования:\n{enc_mess}")
+
+
+if __name__ == '__main__':
+    encr_without_openssl()

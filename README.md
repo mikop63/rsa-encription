@@ -63,7 +63,7 @@ c=m^e (mod n)
 
 `d` - получается по формуле: `e = d mod(fi)`. \
 `fi` - результат перемножения `p` и `q`. Чтобы вычислит эти 2 числа,
-необходимо `fi` - факторизовать.
+необходимо `fi` - факторизовать. `d = invert(e, fi)`
 ```bash 
 factor 123456789
 ```
@@ -148,3 +148,19 @@ with open("mykey.pem","r") as f:
     key = RSA.importKey("\n".join(
             [x.strip() for x in f.read().split("\n")]))
 ```
+
+После зашифрования с помощью функции `encr_with_openssl()` результат можно проверить на другом компьютере.
+Взяв зашифрованный файл `message.pem` можно проверить командой
+
+```bash
+hexdump -C /home/student/3агрузки/message.pem
+```
+
+Используя наш закрытый ключ `teacher.pem` - расшифровываем командой:
+
+```bash
+openssl rsautl -in /home/student/3агрузки/message.pem -inkey /run/media/student/BORMICRO/teacher.pem -decrypt
+# или
+openssl rsautl -in /home/student/3агрузки/message.pem -inkey /run/media/student/BORMICRO/teacher.pem -decrypt -raw -hexdump
+```
+

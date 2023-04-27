@@ -1,2 +1,4 @@
 /venv/
 /.idea
+/message.pem
+/teacher_pub.pem
